@@ -1,6 +1,6 @@
 ---
 name: generate-pixijs-assets
-description: Generate, postprocess, organize, and integrate PixiJS-ready web game art assets. Use when Codex needs to create or adapt raster game art for a PixiJS project, including sprites, animation sheets, texture atlases, backgrounds, maps, props, particles, UI art, icons, loading-screen art, victory or level-complete celebration overlays, asset manifests, PixiJS Assets bundles, and TypeScript asset indexes for browser games.
+description: Generate, postprocess, organize, and integrate PixiJS-ready web game art assets. Use when Codex needs to create or adapt game art for a PixiJS project, including sprites, animation sheets, texture atlases, backgrounds, maps, props, particles, UI art, SVG/vector icons, raster icons, loading-screen art, victory or level-complete celebration overlays, asset manifests, PixiJS Assets bundles, and TypeScript asset indexes for browser games.
 ---
 
 # Generate PixiJS Assets
@@ -17,9 +17,10 @@ Use this skill to turn a game need into production-ready art files that a PixiJS
    - If the official PixiJS skills are installed, use `pixijs` first as the router, then load the most relevant specialized skill: `pixijs-assets` for `Assets`, manifests, bundles, spritesheets, formats, and resolution; `pixijs-scene-sprite` for `Sprite`, `AnimatedSprite`, `NineSliceSprite`, and `TilingSprite`; `pixijs-performance` for atlas, batching, memory, and unload decisions; `pixijs-create` when the project uses `create-pixi`, `creation-web`, or AssetPack.
 
 2. Convert the request into an asset brief.
-   - Define asset categories: `sprites`, `animations`, `backgrounds`, `maps`, `props`, `particles`, `ui`, `icons`, `fonts`, `celebration-overlays`.
+   - Define asset categories: `sprites`, `animations`, `backgrounds`, `maps`, `props`, `particles`, `ui`, `icons`, `svg-icons`, `fonts`, `celebration-overlays`.
    - Define required sizes, camera scale, target resolution, transparency, animation states, frame counts, and intended PixiJS object type (`Sprite`, `AnimatedSprite`, `TilingSprite`, `Container`, `NineSliceSprite`, `ParticleContainer`, or custom shader/mesh).
    - Resolve dimensions before choosing defaults. If the user request includes frame size, atlas size, tile size, viewport size, display size, or high-DPI scale, honor that explicit size first; then use project constraints; only then fall back to asset-role defaults. Read `references/size-planning.md` when dimensions are mentioned or when the asset might appear blurry or memory-heavy.
+   - For small UI icons, toolbar icons, HUD icons, status icons, SVG requests, tintable icons, or icon sets, read `references/icon-assets.md`. Use a vector-first workflow for symbolic UI icons; avoid direct low-resolution AI raster generation unless the icon is an illustrative game-item/ability icon.
    - For victory, level-complete, stage-clear, reward, unlock, combo, achievement, or other celebratory popups, read `references/celebration-overlays.md` and plan a UI/FX package instead of a single baked full-screen image.
    - Decide frame count and sheet structure before generating. Read `references/animation-planning.md` when the action needs more than 4 frames, multiple phases, projectiles, muzzle FX, impact FX, or engine-specific atlas layout.
    - Decide the transparency route before generating. Read `references/transparency.md` for native-transparent output, alpha validation, and chroma-key fallback rules.
@@ -29,12 +30,14 @@ Use this skill to turn a game need into production-ready art files that a PixiJS
    - Use existing project art as the first style reference when available.
    - Use `generate2dsprite` for character, prop, projectile, spell, and animation-sheet work when that skill is available.
    - Use `generate2dmap` for tilemaps, RPG maps, battle arenas, parallax layers, and walkable-background work when that skill is available.
-   - Use `imagegen` for standalone raster art, UI skins, backgrounds, icons, textures, and cutouts when direct image generation is the best fit.
+   - Use code-authored SVG, the project's existing icon set, or a proven icon library for symbolic UI icons. Use `imagegen` for standalone raster art, UI skins, backgrounds, illustrative item/ability icons, textures, and cutouts when direct image generation is the best fit.
    - Keep raw generation artifacts separate from final game assets. Final assets must have predictable names and live where the project can import or serve them.
 
 4. Postprocess for PixiJS.
    - Prefer PNG or WebP for sprites and UI. Use PNG when alpha edges matter or when the project has no WebP fallback strategy.
+   - Prefer SVG source for small symbolic icons. For PixiJS texture use, keep the SVG source and export PNG/WebP `@1x`/`@2x` variants or pack them into an atlas when the project benefits from batching.
    - Use native transparent PNG/WebP for sprites, props, particles, icons, and UI overlays whenever the active image-generation path supports it.
+   - Validate SVG icons with `scripts/svg_icon_qc.py` before finalizing, especially when icons will render at 16px, 24px, 32px, or 48px.
    - Avoid chroma-key extraction for soft FX, glow, smoke, glass, hair-like edges, motion blur, translucent materials, or assets whose colors are close to the key color. Use native transparency or simplify the art so the silhouette is opaque.
    - Validate alpha with `scripts/alpha_qc.py` before finalizing transparent assets.
    - Keep sprite frames on a consistent grid or emit explicit frame metadata.
@@ -63,6 +66,7 @@ For each completed asset pass, provide:
 - Expected PixiJS usage (`Assets.loadBundle`, `Assets.load`, `Sprite.from`, `AnimatedSprite`, etc.).
 - Any generated manifest or TypeScript index paths.
 - For celebration overlays, component list and choreography/timeline metadata.
+- For SVG/vector icons, viewBox grid, stroke/fill style, color/tint strategy, export sizes, and whether the icon is used as inline SVG, SVG texture, or pre-rasterized texture.
 - Transparency route used: native alpha, project pipeline alpha, or chroma-key fallback.
 - Verification performed and remaining risks.
 
@@ -92,6 +96,12 @@ Validate alpha on a final transparent PNG:
 
 ```bash
 python3 scripts/alpha_qc.py public/assets/player/player.png --fail-no-alpha --json-out public/assets/player/player-alpha-qc.json
+```
+
+Validate SVG icons before using them in the UI or as PixiJS textures:
+
+```bash
+python3 scripts/svg_icon_qc.py public/assets/icons/*.svg --max-elements 12 --max-colors 2
 ```
 
 Generate PixiJS spritesheet JSON for a fixed-grid atlas:

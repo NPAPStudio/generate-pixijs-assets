@@ -1,4 +1,4 @@
 interface:
   display_name: "Generate PixiJS Assets"
-  short_description: "Create PixiJS-ready game art assets"
+  short_description: "Create PixiJS-ready game art and icons"
   default_prompt: "Use $generate-pixijs-assets to create PixiJS-ready art assets for this web game."

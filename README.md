@@ -1,6 +1,6 @@
 # generate-pixijs-assets
 
-Codex skill for generating and integrating PixiJS-ready game art assets, including sprites, animation sheets, UI art, effects, celebration overlays, manifests, and TypeScript asset indexes.
+Codex skill for generating and integrating PixiJS-ready game art assets, including sprites, animation sheets, UI art, SVG/vector icons, raster icons, effects, celebration overlays, manifests, and TypeScript asset indexes.
 
 ## Install
 
